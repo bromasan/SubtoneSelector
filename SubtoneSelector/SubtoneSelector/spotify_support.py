@@ -11,8 +11,8 @@ from django_pandas.io import read_frame
 
 SPOTIPY_REDIRECT_URI = 'http://localhost:8000/logged/'
 
-SPOTIPY_CLIENT_ID = ''
-SPOTIPY_CLIENT_SECRET = ''
+SPOTIPY_CLIENT_ID = 'c6b73836172b40b2ac90879f9b54271b'
+SPOTIPY_CLIENT_SECRET = 'bced1ccc150b4ee5b65f295b98e33b95'
 CACHE_PATH = '.cache_spot'
 token=''
 username=''
