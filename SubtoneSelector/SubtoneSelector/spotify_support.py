@@ -10,10 +10,10 @@ from django_pandas.io import read_frame
 import urllib.request
 
 
-SPOTIPY_REDIRECT_URI = 'http://bromasan.pythonanywhere.com/logged/'
+SPOTIPY_REDIRECT_URI = ''
 
-SPOTIPY_CLIENT_ID = 'c6b73836172b40b2ac90879f9b54271b'
-SPOTIPY_CLIENT_SECRET = 'bced1ccc150b4ee5b65f295b98e33b95'
+SPOTIPY_CLIENT_ID = ''
+SPOTIPY_CLIENT_SECRET = ''
 CACHE_PATH = '.cache'
 token=''
 username=''
@@ -42,12 +42,6 @@ def login_spotify(user):
     if not token_info:
         auth_url = sp_oauth.get_authorize_url()
         return auth_url
-        # with urllib.request.urlopen(auth_url) as response:
-        #     html = response.read()
-        #     print(html)
-        # sp_oauth._open_auth_url()
-        # code = sp_oauth.get_auth_response()
-        # token = sp_oauth.get_access_token(code, as_dict=False)
     else:
         token = token_info['access_token']
 
