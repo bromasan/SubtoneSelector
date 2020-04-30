@@ -15,14 +15,18 @@ def login(request):
         form = forms.LoginForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data['username']
-            spotify_support.login_spotify(username)
-            return redirect('search')
+            auth_url = spotify_support.login_spotify(username)
+            if auth_url:
+                return redirect(auth_url)
+            else:
+                return redirect('search')
     return render(request, 'Recommendation/login.html', {'form':form})
 
 def login_auth(request):
     url = request.get_full_path()
     token_info = spotify_support.auth_handler(url)
-    return render(request, 'Recommendation/first_use.html')
+    form = forms.ArtistForm()
+    return redirect('search')
 
 def artist_form_view(request):
     form = forms.ArtistForm()

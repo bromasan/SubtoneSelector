@@ -17,7 +17,7 @@
         <h1>Please enter your username:</h1>
         <form method="post">
           <div class="search_form">
-            {% bootstrap_field form.username layout='inline' placeholder="Username" %}
+            {% bootstrap_field form.username layout='inline' placeholder="Spotify Username" %}
             {%csrf_token%}
             <input type="submit" class = 'btn btn-dark' id="button" value="Connect">
           </div>
