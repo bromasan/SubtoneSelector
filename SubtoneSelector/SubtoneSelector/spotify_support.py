@@ -11,9 +11,8 @@ from django_pandas.io import read_frame
 
 SPOTIPY_REDIRECT_URI = 'http://localhost:8000/logged/'
 
-SPOTIPY_CLIENT_ID = 'c6b73836172b40b2ac90879f9b54271b'
-SPOTIPY_CLIENT_SECRET = 'bced1ccc150b4ee5b65f295b98e33b95'
-# username='1255728105'
+SPOTIPY_CLIENT_ID = ''
+SPOTIPY_CLIENT_SECRET = ''
 CACHE_PATH = '.cache_spot'
 token=''
 username=''
@@ -108,15 +107,6 @@ def findTrackCorr( artist_name, sp):
     return track_list
 
 def make_playlist(artist, new_artists):
-    # scope = 'playlist-modify-public'
-    # sp_oauth = oauth2.SpotifyOAuth(SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET, SPOTIPY_REDIRECT_URI,
-    #                            scope=scope, cache_path=".cache-" + username)
-    # token_info = sp_oauth.get_cached_token()
-    # if not token_info:
-    #     print("not token")
-    #     auth_url = sp_oauth.get_authorize_url()
-    #     return HttpResponseRedirect(auth_url)
-    # sp = spotipy.Spotify(auth=token_info['access_token'])
 
     sp = spotipy.Spotify(auth=token)
 
