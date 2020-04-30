@@ -1,0 +1,94 @@
+body {
+  background-color: #FFFFFF !important;
+}
+
+.jumbotron {
+  background-color: #CAFFD5 !important;
+  height: 100% !important;
+  width:75%;
+  padding: 1rem 2rem !important;
+}
+
+#sscenter{
+  font-family: 'Signika', sans-serif;
+  font-weight:300;
+  color: white !important;
+  font-size: 2em;
+}
+
+h1{
+  font-family: 'Signika', sans-serif;
+  font-weight: 400;
+}
+
+h3{
+  font-family: 'Signika', sans-serif;
+  font-weight: 300;
+}
+.link {
+  /* border: 4px solid #212529; */
+  /* border-radius: 10px; */
+  /* background-color: #B0ECBC; */
+  width:75%;
+  height: 3em;
+  text-align: center;
+  /* padding-top:.35em; */
+  /* margin-top: 1.5em; */
+  text-decoration: underline;
+}
+
+#spotifyURL{
+  color:#212529 !important;
+  vertical-align: middle;
+  font-size: 1.5em !important;
+  font-family: 'Signika', sans-serif;
+  font-weight:300;
+}
+
+#new-spotifyURL{
+  color:#212529 !important;
+  font-family: 'Signika', sans-serif;
+  font-weight:300;
+}
+
+.search_form{
+  width:40% !important;
+}
+
+#button{
+  font-family: 'Signika', sans-serif;
+  font-weight:300;
+}
+
+.artist_img {
+  width:5em;
+  height: 5em;
+  /* border-right: 4px solid #212529; */
+  border-radius:50%;
+  padding:.25em;
+}
+
+#artist_list{
+  /* border-top: 4px solid #212529; */
+  /* border-left: 4px solid #212529; */
+  /* border-right: 4px solid #212529; */
+  /* border-radius: 10px; */
+  width:50%;
+}
+
+.row{
+  /* border-bottom:4px solid #212529; */
+  border-radius: 10px;
+  background-color: #B0ECBC;
+  margin-bottom: .75em;
+}
+
+#artist_name{
+  margin-left: 15%;
+  margin-top: auto;
+  margin-bottom: auto;
+  font-size: 1.5em;
+  color:#212529 !important;
+  font-family: 'Signika', sans-serif;
+  font-weight:300;
+}
