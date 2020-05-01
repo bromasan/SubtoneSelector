@@ -10,10 +10,10 @@ from django_pandas.io import read_frame
 import urllib.request
 
 
-SPOTIPY_REDIRECT_URI = ''
+SPOTIPY_REDIRECT_URI = 'http://bromasan.pythonanywhere.com/logged/'
 
-SPOTIPY_CLIENT_ID = ''
-SPOTIPY_CLIENT_SECRET = ''
+SPOTIPY_CLIENT_ID = 'c6b73836172b40b2ac90879f9b54271b'
+SPOTIPY_CLIENT_SECRET = 'bced1ccc150b4ee5b65f295b98e33b95'
 CACHE_PATH = '.cache'
 token=''
 username=''
@@ -34,8 +34,7 @@ def login_spotify(user):
 
     global token, username
     username = user
-    if username not in sp_oauth.cache_path:
-        sp_oauth.cache_path = '.cache_' + username
+    sp_oauth.cache_path = '.cache_' + username
 
     token_info = sp_oauth.get_cached_token()
 
@@ -51,7 +50,9 @@ def login_spotify(user):
 def auth_handler(request):
     code = sp_oauth.parse_response_code(request)
     token_info = sp_oauth.get_access_token(code)
-    return token_info['access_token']
+    global token
+    token = token_info['access_token']
+
 
 
 def findTrackCorr( artist_name, sp):
@@ -148,6 +149,7 @@ def recommend_artists( artist_name):
     conn =sqlite3.connect('db.sqlite3')
     # read in the info for big artists into DataFrame
     big_df =pd.read_sql_query("SELECT *  FROM recommendation_bigartist WHERE name ='"+artist_name+"'", conn)
+
     # read in the info for small artists into DataFrame
     small_df =pd.read_sql_query("SELECT * FROM recommendation_smallartist", conn)
 

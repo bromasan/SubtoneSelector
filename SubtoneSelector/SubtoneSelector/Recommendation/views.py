@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect
 from Recommendation.models import BigArtist
 from . import forms
-from django.http import HttpResponse, HttpResponseRedirect
 import spotify_support
 
 
@@ -24,8 +23,7 @@ def login(request):
 
 def login_auth(request):
     url = request.get_full_path()
-    token_info = spotify_support.auth_handler(url)
-    form = forms.ArtistForm()
+    spotify_support.auth_handler(url)
     return redirect('search')
 
 def artist_form_view(request):
