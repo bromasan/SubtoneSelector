@@ -1,5 +1,4 @@
 #!/bin/python3
-
 from __future__ import print_function    # (at top of module)
 from spotipy.oauth2 import SpotifyClientCredentials
 import json
@@ -17,14 +16,33 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SubtoneSelector.settings')
 import django
 django.setup()
 
+SPOTIPY_REDIRECT_URI = ''
+SPOTIPY_CLIENT_ID = ''
+SPOTIPY_CLIENT_SECRET = ''
+CACHE_PATH = ''
+token=''
+username=''
+
+sp_oauth = spotipy.SpotifyOAuth(
+    SPOTIPY_CLIENT_ID,
+    SPOTIPY_CLIENT_SECRET,
+    SPOTIPY_REDIRECT_URI,
+    scope='playlist-modify-public',
+    cache_path=CACHE_PATH,
+    show_dialog=False
+)
 
 from Recommendation.models import BigArtist, SmallArtist
 
+# Takes in Big Artist list 
+# Connects to the Spotify and searches 50 songs from artist
+# Averages the values from each song to find the average sound of an artist
+# Creates a BigArtist object that contains the average data points
 def makeBigDatabase(artists):
 	data_set = {}
 	data_set['artists'] = []
 	for artist_name in artists:
-		results = sp.search(q=artist_name, limit=50)
+		results = sp.search(q='"'+artist_name[0]+'"', limit=50)
 		tids = []
 		for i, t in enumerate(results['tracks']['items']):
 		    tids.append(t['uri'])
@@ -40,26 +58,28 @@ def makeBigDatabase(artists):
 		delta = time.time() - start
 		for feature in features:
 			td = {}
-			for key in feature:
-				if key not in unincluded:
-					td[key] = feature[key]
-					if key not in avgData:
-						avgData[key] = feature[key]
-					else:
-						avgData[key] += feature[key]
-			data['tracks'].append(td)
+			if feature:
+				for key in feature:
+					if key not in unincluded:
+						td[key] = feature[key]
+						if key not in avgData:
+							avgData[key] = feature[key]
+						else:
+							avgData[key] += feature[key]
+				data['tracks'].append(td)
 
 		for key in avgData:
 			avgData[key] /= len(features)
 
 
-		avgData['artist'] = artist_name
+		avgData['artist'] = artist_name[0]
+		avgData['genre'] = artist_name[1]
 		data_set['artists'].append(avgData)
 
 	for artist in data_set['artists']:
 		vals = {
 			'name':artist['artist'],
-			'genre':"Hip Hop",
+			'genre':artist['genre'],
 			'danceability':artist['danceability'],
 			'energy':artist['energy'],
 			'key':artist['key'],
@@ -74,11 +94,15 @@ def makeBigDatabase(artists):
 		}
 		artst = BigArtist.objects.update_or_create(name = artist['artist'], defaults = vals)[0]
 
+# Takes in Small Artist list 
+# Connects to the Spotify and searches 50 songs from artist
+# Averages the values from each song to find the average sound of an artist
+# Creates a SmallArtist object that contains the average data points
 def makeSmallDatabase(artists):
 	data_set = {}
 	data_set['artists'] = []
 	for artist_name in artists:
-		results = sp.search(q=artist_name, limit=50)
+		results = sp.search(q='"'+artist_name[0]+'"', limit=50)
 		tids = []
 		for i, t in enumerate(results['tracks']['items']):
 		    tids.append(t['uri'])
@@ -94,20 +118,22 @@ def makeSmallDatabase(artists):
 		delta = time.time() - start
 		for feature in features:
 			td = {}
-			for key in feature:
-				if key not in unincluded:
-					td[key] = feature[key]
-					if key not in avgData:
-						avgData[key] = feature[key]
-					else:
-						avgData[key] += feature[key]
-			data['tracks'].append(td)
+			if feature:
+				for key in feature:
+					if key not in unincluded:
+						td[key] = feature[key]
+						if key not in avgData:
+							avgData[key] = feature[key]
+						else:
+							avgData[key] += feature[key]
+				data['tracks'].append(td)
 
 		for key in avgData:
 			avgData[key] /= len(features)
 
 
-		avgData['artist'] = artist_name
+		avgData['artist'] = artist_name[0]
+		avgData['genre'] = artist_name[1]
 		data_set['artists'].append(avgData)
 
 	for artist in data_set['artists']:
@@ -132,15 +158,26 @@ def makeSmallDatabase(artists):
 
 
 
-
+# Main code that opens a big_artist.csv file and small_artist.csv file 
+# Adds the artists in the files to the respective lists
+# Calls the respective functions to create/update the Big and Small Artist databases
 if __name__=='__main__':
-	big_artists = ['Post Malone', 'Khalid', 'Drake', 'Lil Nas X', 'Travis Scott', 'Juice WRLD', 'DaBaby', 'Cardi B', 'Lil Baby', 'Meek Mill', 'A Boogie Wit Da Hoodie', 'Lizzo', '21 Savage', 'XXXTentacion', 'Chris Brown', 'Kodak Black', 'Gunna', 'J. Cole', 'Young Thug', 'Lil Tecca']
-	small_artists = ['Lil Keed', 'Pop Smoke', 'Guapdad 4000', 'Jack Harlow', 'Kaash Paige', 'Baby Keem', 'Arizona Zervas', 'Layton Greene', 'King Von', 'Don Toliver', 'Fivio Foreign', 'Arin Ray', 'Trevor Daniel', 'Stunna 4 Vegas', 'YNW Melly', 'Polo G', 'Roddy Rich', 'Lil Tjay', 'YBN Cordae', 'Lil Mosey', 'YBN Nahmir', 'Flipp Dinero', 'Saweetie', 'Yung Bans', 'Young Nudy', 'Tierra Whack', 'Noname', 'Asian Doll', 'Kid Trunks']
+	big_artists = []
+	small_artists = []
 
-	token = util.prompt_for_user_token('1255728105', 'playlist-modify-public')
+	with open('big_artists.csv', newline ='') as csvfile:
+		reader = csv.DictReader(csvfile)
+		for row in reader:
+			big_artists.append([row['artist'], row['genre']])
+	with open('small_artists.csv', newline ='') as csvfile:
+		reader = csv.DictReader(csvfile)
+		for row in reader:
+			small_artists.append([row['artist'], row['genre']])
 
-	if token:
-		sp = spotipy.Spotify(auth=token)
+	
+
+		client_credentials_manager = SpotifyClientCredentials(client_id = SPOTIPY_CLIENT_ID, client_secret =SPOTIPY_CLIENT_SECRET)
+		sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 		makeBigDatabase(big_artists)
 		makeSmallDatabase(small_artists)
