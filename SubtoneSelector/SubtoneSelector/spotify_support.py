@@ -10,10 +10,10 @@ from django_pandas.io import read_frame
 import urllib.request
 
 
-SPOTIPY_REDIRECT_URI = 'http://bromasan.pythonanywhere.com/logged/'
+SPOTIPY_REDIRECT_URI = ''
 
-SPOTIPY_CLIENT_ID = 'c6b73836172b40b2ac90879f9b54271b'
-SPOTIPY_CLIENT_SECRET = 'bced1ccc150b4ee5b65f295b98e33b95'
+SPOTIPY_CLIENT_ID = ''
+SPOTIPY_CLIENT_SECRET = ''
 CACHE_PATH = '.cache'
 token=''
 username=''
@@ -27,9 +27,13 @@ sp_oauth = spotipy.SpotifyOAuth(
     show_dialog=False
 )
 
+#return the current global token
 def get_token():
     return token
 
+#checks if there is token information stored for current user.
+# if so, set the token to the value stored in 'access_token'
+# otherwise, return the authorization link so the user can log in with their Spotify account
 def login_spotify(user):
 
     global token, username
@@ -46,15 +50,18 @@ def login_spotify(user):
 
     return
 
-
+# Once the user authorizes Spotify access it will redirect to "/logged/" where auth_handler 
+# will be called. This parses the URL for the access token information, then sets the token
 def auth_handler(request):
     code = sp_oauth.parse_response_code(request)
     token_info = sp_oauth.get_access_token(code)
     global token
     token = token_info['access_token']
 
-
-
+# Takes the name of the new artist and finds tracks by said artist where the audio features
+# most closely correlate with the average audio features of the artist
+# Tries to find songs that most likely represents the artist's sound
+# Returns 5 song URIs in a list
 def findTrackCorr( artist_name, sp):
     conn =sqlite3.connect('db.sqlite3')
     results = sp.search(q=artist_name, limit=5)
@@ -101,15 +108,18 @@ def findTrackCorr( artist_name, sp):
                 continue
             else:
                 repeats.append(track_name)
-                track_artist = sp.track(row.name)['artists'][0]['name']
-                track_url = "spotify:track:"+row.name
-                # track_list.append(track_artist)
+                #track_artist = sp.track(row.name)['artists'][0]['name']
+                #track_url = "spotify:track:"+row.name
                 track_list.append(row.name)
                 count += 1
         else:
             break
     return track_list
 
+# Takes in the Big Artist that the user selected, and the recommended artists discovered in recommend_artists()
+# Calls findTrackCorr() to find the songs for each of the recommended artists
+# Connects to user's account and makes a playlist with each of the songs
+# Returns the link for the playlist
 def make_playlist(artist, new_artists):
 
     sp = spotipy.Spotify(auth=token)
@@ -137,41 +147,27 @@ def make_playlist(artist, new_artists):
 
     playlist_URL = "https://open.spotify.com/playlist/" + playlist_id
 
-    print("Follow this link to visit your new playlist:")
-    print(playlist_URL)
-
     return playlist_URL
 
+# Takes in the artist user selects
+# Uses the stored artists data of the artist to find the new artists that most closely relate to input artist
+# Returns a list of all of the new artists
 def recommend_artists( artist_name):
 
     sp = spotipy.Spotify(auth=token)
 
     conn =sqlite3.connect('db.sqlite3')
-    # read in the info for big artists into DataFrame
     big_df =pd.read_sql_query("SELECT *  FROM recommendation_bigartist WHERE name ='"+artist_name+"'", conn)
-
-    # read in the info for small artists into DataFrame
     small_df =pd.read_sql_query("SELECT * FROM recommendation_smallartist", conn)
 
-
-    # make big artist matrix to hold data
     big_artist_matrix = big_df.pivot_table(columns = 'name')
-
-    # make small artist matrix to hold data
     small_artist_matrix = small_df.pivot_table(columns = 'name')
 
-    # makes a table object for just the subject
     artist = big_artist_matrix[artist_name]
 
-
-    # find table of artists that most closely correlate with subject
     similar_to_artist = small_artist_matrix.corrwith(artist, axis=0)
 
-    #makes table of similar_to_artist with correlation value
     corr_artist = pd.DataFrame(similar_to_artist, columns=['correlation'])
-    # corr_artist.dropna(inplace=True)
-
-    # sorts table by corr values
     corr_artist = corr_artist.sort_values(by='correlation', ascending=False)
 
     count = 0
@@ -183,6 +179,9 @@ def recommend_artists( artist_name):
 
     return artist_list
 
+# Takes in an artist name
+# Finds Spotify image for artist
+# Returns the image URL to later be displayed on page
 def get_image(artist_name):
 
     sp = spotipy.Spotify(auth=token)
@@ -195,6 +194,10 @@ def get_image(artist_name):
     else:
     	return None
 
+    
+# Take in an artist name
+# Finds the Spotify URL for artist
+# Returns URL to later link user to the artist
 def get_url(artist_name):
 
     sp = spotipy.Spotify(auth=token)
