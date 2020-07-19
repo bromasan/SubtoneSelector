@@ -34,17 +34,26 @@ def artist_form_view(request):
         if form.is_valid():
             name = form.cleaned_data['name']
             try:
-                new_artists = spotify_support.recommend_artists(name)
-                new_images = []
-                for i in new_artists:
-                    new_images.append([i, spotify_support.get_image(i), spotify_support.get_url(i)])
-                playlist = spotify_support.make_playlist(name, new_artists)
-                artist_view = {
-                    'playlist': playlist,
-                    'new_artists': new_images
-                }
+                artist_obj = BigArtist.objects.filter(name=name)
+                if len(artist_obj) > 0:
+                    genres = [artist_obj[0].genre1, artist_obj[0].genre2, artist_obj[0].genre3]
+                    print(name, genres)
+                    new_artists = spotify_support.recommend_artists(name, genres)
+                    new_images = []
+                    for i in new_artists:
+                        new_images.append([i, spotify_support.get_image(i), spotify_support.get_url(i)])
+                    playlist = spotify_support.make_playlist(name, new_artists, genres)
+                    artist_view = {
+                        'playlist': playlist[0],
+                        'new_artists': new_images,
+                        'playlist_name': playlist[1]
+                    }
 
-                return render(request, 'Recommendation/artist.html', context=artist_view)
+                    return render(request, 'Recommendation/artist.html', context=artist_view)
+                else:
+                    return render(request, 'Recommendation/form.html', {'form':form, 'error':'Artist Unavailable, please check spelling or try another artist.'})
+
             except BigArtist.DoesNotExist:
                 print("PERSON DOES NOT EXIST")
+                return render(request, 'Recommendation/form.html', {'form':form, 'error':'Artist Unavailable, please check spelling or try another artist.'})
     return render(request, 'Recommendation/form.html', {'form':form})
