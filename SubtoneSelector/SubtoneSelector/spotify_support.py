@@ -10,11 +10,10 @@ from django_pandas.io import read_frame
 import urllib.request
 
 
-SPOTIPY_REDIRECT_URI = ''
-
-SPOTIPY_CLIENT_ID = ''
-SPOTIPY_CLIENT_SECRET = ''
-CACHE_PATH = '.cache'
+SPOTIPY_REDIRECT_URI = 'http://localhost:8000/logged/'
+SPOTIPY_CLIENT_ID = 'c6b73836172b40b2ac90879f9b54271b'
+SPOTIPY_CLIENT_SECRET = 'bced1ccc150b4ee5b65f295b98e33b95'
+CACHE_PATH = ''
 token=''
 username=''
 
@@ -50,7 +49,7 @@ def login_spotify(user):
 
     return
 
-# Once the user authorizes Spotify access it will redirect to "/logged/" where auth_handler 
+# Once the user authorizes Spotify access it will redirect to "/logged/" where auth_handler
 # will be called. This parses the URL for the access token information, then sets the token
 def auth_handler(request):
     code = sp_oauth.parse_response_code(request)
@@ -62,27 +61,30 @@ def auth_handler(request):
 # most closely correlate with the average audio features of the artist
 # Tries to find songs that most likely represents the artist's sound
 # Returns 5 song URIs in a list
-def findTrackCorr( artist_name, sp):
+def findTrackCorr( artist_name, sp, genre):
     conn =sqlite3.connect('db.sqlite3')
-    results = sp.search(q=artist_name, limit=5)
+    results = sp.search(q=artist_name, limit=50)
     tids = []
 
     for i, t in enumerate(results['tracks']['items']):
-        tids.append(t['uri'])
+        if t['artists'][0]['name'] == artist_name:
+            tids.append(t['uri'])
 
     data = {}
     unincluded = ['analysis_url', 'duration_ms', 'time_signature', 'track_href', 'type', 'uri']
     features = sp.audio_features(tids)
-
+    if not features:
+        return []
     for feature in features:
-        for key in feature:
-            if key not in unincluded:
-                if key not in data:
-                    data[key] = [feature[key]]
-                else:
-                    data[key].append(feature[key])
+        if feature:
+            for key in feature:
+                if key not in unincluded:
+                    if key not in data:
+                        data[key] = [feature[key]]
+                    else:
+                        data[key].append(feature[key])
 
-    small_df = pd.read_sql_query("SELECT * FROM recommendation_smallartist", conn)
+    small_df = pd.read_sql_query("SELECT * FROM recommendation_smallartist WHERE genre1 in ('"+genre[0]+"', '"+genre[1]+"', '"+genre[2]+"') or genre2 in ('"+genre[0]+"', '"+genre[1]+"', '"+genre[2]+"') or genre3 in ('"+genre[0]+"', '"+genre[1]+"', '"+genre[2]+"') COLLATE NOCASE", conn)
     small_artist_matrix = small_df.pivot_table(columns = 'name')
 
     df = pd.DataFrame.from_dict(data)
@@ -120,7 +122,7 @@ def findTrackCorr( artist_name, sp):
 # Calls findTrackCorr() to find the songs for each of the recommended artists
 # Connects to user's account and makes a playlist with each of the songs
 # Returns the link for the playlist
-def make_playlist(artist, new_artists):
+def make_playlist(artist, new_artists, genre):
 
     sp = spotipy.Spotify(auth=token)
 
@@ -141,24 +143,24 @@ def make_playlist(artist, new_artists):
 
 
     for key in new_artists:
-        playlist.extend(findTrackCorr(key, sp))
+        playlist.extend(findTrackCorr(key, sp, genre))
 
     sp.user_playlist_add_tracks(username, playlist_id, playlist, position=None)
 
     playlist_URL = "https://open.spotify.com/playlist/" + playlist_id
 
-    return playlist_URL
+    return [playlist_URL, playlist_name]
 
 # Takes in the artist user selects
 # Uses the stored artists data of the artist to find the new artists that most closely relate to input artist
 # Returns a list of all of the new artists
-def recommend_artists( artist_name):
+def recommend_artists( artist_name, genre):
 
     sp = spotipy.Spotify(auth=token)
 
     conn =sqlite3.connect('db.sqlite3')
     big_df =pd.read_sql_query("SELECT *  FROM recommendation_bigartist WHERE name ='"+artist_name+"'", conn)
-    small_df =pd.read_sql_query("SELECT * FROM recommendation_smallartist", conn)
+    small_df =pd.read_sql_query("SELECT * FROM recommendation_smallartist WHERE genre1 in ('"+genre[0]+"', '"+genre[1]+"', '"+genre[2]+"') or genre2 in ('"+genre[0]+"', '"+genre[1]+"', '"+genre[2]+"') or genre3 in ('"+genre[0]+"', '"+genre[1]+"', '"+genre[2]+"') COLLATE NOCASE", conn)
 
     big_artist_matrix = big_df.pivot_table(columns = 'name')
     small_artist_matrix = small_df.pivot_table(columns = 'name')
@@ -194,7 +196,7 @@ def get_image(artist_name):
     else:
     	return None
 
-    
+
 # Take in an artist name
 # Finds the Spotify URL for artist
 # Returns URL to later link user to the artist
