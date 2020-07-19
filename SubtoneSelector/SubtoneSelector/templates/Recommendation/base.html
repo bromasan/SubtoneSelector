@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Subtone Selector</title>
+    <link rel="stylesheet" href="{% static "css/ssmaster.css" %}">
+    <link href="https://fonts.googleapis.com/css2?family=Signika:wght@300;400&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <header class="navigation">
+      <nav>
+        <a id = "sscenter" href="{% url 'home' %}">Subtone Selector</a>
+      </nav>
+    </header>
+
+    <div class="container">
+      {% block body_block%}
+      {% endblock %}
+    </div>
+    <script>
+      function mouseOver(img) {
+        document.getElementById("name").innerText = img.name;
+      }
+      function mouseOut() {
+        document.getElementById("name").innerText = "";
+      }
+    </script>
+  </body>
+</html>
