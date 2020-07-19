@@ -2,10 +2,15 @@
 
 {% block body_block%}
 <div class="content">
-  <h1>Subtone Selector</h1>
-  <h3>find new artists whose sounds you already dig</h3>
+  <h1>Please enter your username:</h1>
+  <form method="post">
 
-  <a href='login/' id="button" name="button">Get Started</a>
+    {{ form.as_p}}
+    {%csrf_token%}
+    <input type="submit" id="button" value="Connect">
+
+
+  </form>
 
 </div>
 {%endblock%}
