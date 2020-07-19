@@ -1,54 +1,34 @@
-<!DOCTYPE html>
-{% load static %}
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>Subtone Selector</title>
-    <link rel="stylesheet" href="{% static 'css/ssmaster.css'%}">
-    <link href="https://fonts.googleapis.com/css2?family=Signika:wght@300;400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+{% extends 'Recommendation/base.html' %}
 
-  </head>
-  <body>
-    <nav class="navbar navbar-dark bg-dark">
-      <a class="navbar-brand"  id = "sscenter" href="{% url 'home' %}">Subtone Selector</a>
-    </nav>
-      <div class="jumbotron mx-auto" align="center">
-        <div class="container">
+{% block body_block %}
+<div class="content artists">
+  <h1>Here's the playlist with your new artists:</h1>
+  <div class="link">
+    {% if playlist %}
+    <a id = "spotifyURL" href="{{playlist}}">{{playlist_name}}</a>
+    {% else %}
+      <p>There is no playlist</p>
+    {% endif %}
+  </div>
+  <h3>Here are your artists:</h3>
+  {% if new_artists %}
+  <div id="artist_list">
 
-          <h1>Here's the playlist with your new artists:</h1>
-          <div class="link">
-            {% if playlist %}
-            <a id = "spotifyURL" href="{{playlist}}">{{playlist}}</a>
-            {% else %}
-              <p>There is no playlist</p>
-            {% endif %}
-          </div>
-          <h3>Here are your artists:</h3>
-          {% if new_artists %}
-          <div class="container" id="artist_list">
-            {% for new_art in new_artists%}
-            <div class="row">
-              <div class="col-4-lg col-3-sm">
-                <img class="artist_img" src="{{new_art.1}}" alt="">
-              </div>
-              <div class="col-8-lg col-6-sm" id="artist_name">
-                <a href="{{new_art.2}}" id="new-spotifyURL">{{new_art.0}}</a>
-              </div>
+    {% for new_art in new_artists%}
+      <a onmouseover="mouseOver(this)" onmouseout="mouseOut()" href="{{new_art.2}}" id="artist_{{forloop.counter0}}" name="{{new_art.0}}"><img class="artist_img" src="{{new_art.1}}" alt=""></a>
+    {%endfor%}
 
-            </div>
-            {%endfor%}
-          </div>
-          {% else %}
-          <div class="container">
-            <h3>Nothing Found</h3>
-
-          </div>
-          {% endif %}
-        </div>
-
-      </div>
+  </div>
+  <div class="name-div">
+    <h3 id="name"></h3>
+  </div>
+  {% else %}
+  <div class="container">
+    <h3>Nothing Found</h3>
+  </div>
+</div>
+{% endif %}
 
 
-  </body>
-</html>
+
+{% endblock %}
